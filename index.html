@@ -287,6 +287,21 @@
   <!-- PAGE 2: Imputación -->
   <div class="page" id="page2">
     <div class="card">
+      <div class="card-header">Tipo de consumo</div>
+      <div class="card-body">
+        <div class="form-row">
+          <label for="tipo-consumo">¿Consumo Local o Consumo Obra?</label>
+          <select id="tipo-consumo" onchange="onTipoConsumoChange()">
+            <option value="">Seleccione…</option>
+            <option value="LOCAL">Consumo Local</option>
+            <option value="OBRA">Consumo Obra</option>
+          </select>
+          <div class="err" id="err-tipo-consumo">Seleccione el tipo de consumo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="bloque-local" style="display:none">
       <div class="card-header">Imputación de la tarea</div>
       <div class="card-body">
         <div class="form-row">
@@ -319,6 +334,18 @@
         </div>
       </div>
     </div>
+
+    <div class="card" id="bloque-obra" style="display:none">
+      <div class="card-header">Código de obra</div>
+      <div class="card-body">
+        <div class="form-row">
+          <label for="codigo-obra">Ingrese el código de obra</label>
+          <input type="text" id="codigo-obra" placeholder="Ej: OB-2026-014" oninput="showErr('err-codigo-obra', false); setInvalid('codigo-obra', false)">
+          <div class="err" id="err-codigo-obra">Ingrese el código de obra</div>
+        </div>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn-secondary" onclick="goTo(1)">← Atrás</button>
       <button class="btn-primary" onclick="goTo(3)">Siguiente →</button>
@@ -452,13 +479,22 @@ function validatePage(page) {
     ok = legajoValido && !!destino;
   }
   if (page === 2) {
-    const tipo = document.getElementById('tipo').value;
-    const proceso = document.getElementById('proceso').value;
-    const actividad = document.getElementById('actividad').value;
-    showErr('err-tipo', !tipo); setInvalid('tipo', !tipo);
-    showErr('err-proceso', !proceso); setInvalid('proceso', !proceso);
-    showErr('err-actividad', !actividad); setInvalid('actividad', !actividad);
-    ok = !!(tipo && proceso && actividad);
+    const tipoConsumo = document.getElementById('tipo-consumo').value;
+    showErr('err-tipo-consumo', !tipoConsumo); setInvalid('tipo-consumo', !tipoConsumo);
+    if (!tipoConsumo) { ok = false; }
+    else if (tipoConsumo === 'LOCAL') {
+      const tipo = document.getElementById('tipo').value;
+      const proceso = document.getElementById('proceso').value;
+      const actividad = document.getElementById('actividad').value;
+      showErr('err-tipo', !tipo); setInvalid('tipo', !tipo);
+      showErr('err-proceso', !proceso); setInvalid('proceso', !proceso);
+      showErr('err-actividad', !actividad); setInvalid('actividad', !actividad);
+      ok = !!(tipo && proceso && actividad);
+    } else if (tipoConsumo === 'OBRA') {
+      const codigoObra = document.getElementById('codigo-obra').value.trim();
+      showErr('err-codigo-obra', !codigoObra); setInvalid('codigo-obra', !codigoObra);
+      ok = !!codigoObra;
+    }
   }
   if (page === 3) {
     let qOk = true;
@@ -553,6 +589,17 @@ function selectLegajo(idx) {
   const ok = document.getElementById('ok-legajo');
   ok.textContent = '✓ ' + p[1];
   ok.classList.add('show');
+}
+
+// ============================================================
+// TIPO DE CONSUMO: LOCAL vs OBRA
+// ============================================================
+function onTipoConsumoChange() {
+  const val = document.getElementById('tipo-consumo').value;
+  document.getElementById('bloque-local').style.display = (val === 'LOCAL') ? 'block' : 'none';
+  document.getElementById('bloque-obra').style.display = (val === 'OBRA') ? 'block' : 'none';
+  showErr('err-tipo-consumo', false);
+  setInvalid('tipo-consumo', false);
 }
 
 // ============================================================
@@ -707,23 +754,53 @@ function renderMaterials() {
 // ============================================================
 // SUMMARY
 // ============================================================
-function buildSummary() {
-  const legajo = document.getElementById('legajo-input').value.trim();
+// ============================================================
+// HELPER: obtiene los datos de imputación según LOCAL/OBRA
+// ============================================================
+function getDatosImputacion() {
+  const tipoConsumo = document.getElementById('tipo-consumo').value;
   const destino = document.getElementById('destino').value;
+  if (tipoConsumo === 'OBRA') {
+    const codigoObra = document.getElementById('codigo-obra').value.trim();
+    return {
+      tipoConsumo: 'OBRA',
+      tipo: '', proceso: '', actividad: '',
+      codigoObra: codigoObra,
+      cecoCompleto: destino + codigoObra
+    };
+  }
   const tipo = document.getElementById('tipo').value;
   const proceso = document.getElementById('proceso').value;
   const actividad = document.getElementById('actividad').value;
   const ceco = document.getElementById('ceco-display').value;
+  return {
+    tipoConsumo: 'LOCAL',
+    tipo, proceso, actividad,
+    codigoObra: '',
+    cecoCompleto: destino + ceco
+  };
+}
+
+function buildSummary() {
+  const legajo = document.getElementById('legajo-input').value.trim();
+  const destino = document.getElementById('destino').value;
+  const datos = getDatosImputacion();
+
+  const filasImputacion = datos.tipoConsumo === 'OBRA'
+    ? `<div class="summary-item"><span class="key">Tipo de consumo</span><span class="val">Consumo Obra</span></div>
+       <div class="summary-item"><span class="key">Código de obra</span><span class="val">${datos.codigoObra}</span></div>`
+    : `<div class="summary-item"><span class="key">Tipo de consumo</span><span class="val">Consumo Local</span></div>
+       <div class="summary-item"><span class="key">Área</span><span class="val">${datos.tipo}</span></div>
+       <div class="summary-item"><span class="key">Proceso</span><span class="val">${datos.proceso}</span></div>
+       <div class="summary-item"><span class="key">Actividad</span><span class="val">${datos.actividad}</span></div>`;
 
   const body = document.getElementById('summary-body');
   body.innerHTML = `
     <div class="summary-item"><span class="key">Legajo</span><span class="val">${legajo}</span></div>
     <div class="summary-item"><span class="key">Nombre</span><span class="val">${legajoNombre}</span></div>
     <div class="summary-item"><span class="key">Centro Operativo</span><span class="val">${destino}</span></div>
-    <div class="summary-item"><span class="key">Área</span><span class="val">${tipo}</span></div>
-    <div class="summary-item"><span class="key">Proceso</span><span class="val">${proceso}</span></div>
-    <div class="summary-item"><span class="key">Actividad</span><span class="val">${actividad}</span></div>
-    <div class="summary-item"><span class="key">Código CeCo</span><span class="val" style="font-family:monospace;color:var(--accent)">${ceco}</span></div>
+    ${filasImputacion}
+    <div class="summary-item"><span class="key">Código CeCo</span><span class="val" style="font-family:monospace;color:var(--accent)">${datos.cecoCompleto}</span></div>
     <div class="summary-mats">
       <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Materiales (${selectedMaterials.length})</div>
       ${selectedMaterials.map(m => `
@@ -745,15 +822,12 @@ let ultimoNombreArchivo = '';
 function confirmar() {
   const legajo = document.getElementById('legajo-input').value.trim();
   const destino = document.getElementById('destino').value;
-  const tipo = document.getElementById('tipo').value;
-  const proceso = document.getElementById('proceso').value;
-  const actividad = document.getElementById('actividad').value;
-  const ceco = document.getElementById('ceco-display').value;
+  const datos = getDatosImputacion();
   const ahora = new Date().toLocaleString('sv-SE').replace('T', ' ');
 
-  const rows = [['Fecha y Hora','Legajo','Nombre','Material','Código','Cantidad','Centro Operativo','Tipo','Proceso','Actividad','CeCo']];
+  const rows = [['Fecha y Hora','Legajo','Nombre','Material','Código','Cantidad','Centro Operativo','Tipo de Consumo','Tipo','Proceso','Actividad','Código de Obra','CeCo']];
   selectedMaterials.forEach(m => {
-    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.cantidad, destino, tipo, proceso, actividad, ceco]);
+    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.cantidad, destino, datos.tipoConsumo, datos.tipo, datos.proceso, datos.actividad, datos.codigoObra, datos.cecoCompleto]);
   });
 
   const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
@@ -772,10 +846,16 @@ function confirmar() {
   cuerpo += `Legajo: ${legajo}\n`;
   cuerpo += `Nombre: ${legajoNombre}\n`;
   cuerpo += `Centro Operativo: ${destino}\n`;
-  cuerpo += `Área: ${tipo}\n`;
-  cuerpo += `Proceso: ${proceso}\n`;
-  cuerpo += `Actividad: ${actividad}\n`;
-  cuerpo += `Código CeCo: ${ceco}\n\n`;
+  if (datos.tipoConsumo === 'OBRA') {
+    cuerpo += `Tipo de consumo: Consumo Obra\n`;
+    cuerpo += `Código de obra: ${datos.codigoObra}\n`;
+  } else {
+    cuerpo += `Tipo de consumo: Consumo Local\n`;
+    cuerpo += `Área: ${datos.tipo}\n`;
+    cuerpo += `Proceso: ${datos.proceso}\n`;
+    cuerpo += `Actividad: ${datos.actividad}\n`;
+  }
+  cuerpo += `Código CeCo: ${datos.cecoCompleto}\n\n`;
   cuerpo += `Materiales solicitados:\n`;
   selectedMaterials.forEach(m => {
     cuerpo += `- ${m.nombre} [${m.codigo}]: ${m.cantidad} un.\n`;
@@ -796,6 +876,10 @@ function nuevaSolicitud() {
   document.getElementById('legajo-input').value = '';
   document.getElementById('ok-legajo').classList.remove('show');
   document.getElementById('destino').value = '';
+  document.getElementById('tipo-consumo').value = '';
+  document.getElementById('bloque-local').style.display = 'none';
+  document.getElementById('bloque-obra').style.display = 'none';
+  document.getElementById('codigo-obra').value = '';
   document.getElementById('tipo').value = '';
   document.getElementById('proceso').innerHTML = '<option value="">Primero seleccione tipo…</option>';
   document.getElementById('proceso').disabled = true;

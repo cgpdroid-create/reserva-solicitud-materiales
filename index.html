@@ -64,6 +64,15 @@
     text-transform: uppercase;
     color: var(--accent);
   }
+  .card-header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .btn-stock {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: white; color: var(--accent); border: 1.5px solid var(--accent);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    white-space: nowrap; transition: background 0.15s, color 0.15s;
+  }
+  .btn-stock:hover { background: var(--accent); color: white; }
   .card-body { padding: 18px; }
 
   .form-row { margin-bottom: 16px; position: relative; }
@@ -226,6 +235,8 @@
     .mat-row { flex-wrap: wrap; }
     .add-mat-row { flex-direction: column; }
     .btn-add-mat { width: 100%; }
+    .card-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .btn-stock { width: 100%; justify-content: center; }
   }
 </style>
 </head>
@@ -355,7 +366,13 @@
   <!-- PAGE 3: Materiales -->
   <div class="page" id="page3">
     <div class="card">
-      <div class="card-header">Materiales a solicitar</div>
+      <div class="card-header card-header-row">
+        <span>Materiales a solicitar</span>
+        <button type="button" class="btn-stock" onclick="window.open('https://cgpdroid-create.github.io/stock-material/', '_blank', 'noopener')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 5.5l6-3 6 3-6 3-6-3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 5.5v5l6 3 6-3v-5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 8.5v5" stroke="currentColor" stroke-width="1.3"/></svg>
+          Consultar Stocks
+        </button>
+      </div>
       <div class="card-body">
         <div class="add-mat-row">
           <div class="autocomplete-wrap">

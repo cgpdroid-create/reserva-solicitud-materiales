@@ -218,6 +218,7 @@
   .btn-download:hover { opacity: 0.88; }
   .btn-email { background: var(--accent); }
   .email-hint { font-size: 0.76rem; color: var(--text-light); margin: 4px 0 16px; }
+  .email-hint-windows { font-size: 0.72rem; color: var(--text-light); margin: -8px 0 16px; font-style: italic; line-height: 1.4; }
   .btn-nueva { margin-top: 10px; }
 
   /* Errors */
@@ -434,6 +435,7 @@
           </a>
         </div>
         <p class="email-hint">Se abrirá su cliente de correo con los datos completos. Adjunte el Excel que descargó antes de enviar.</p>
+        <p class="email-hint-windows">¿En Windows se abre una ventana web en vez de Outlook? Vaya a Configuración → Aplicaciones predeterminadas → busque "Outlook" → asocie el protocolo MAILTO.</p>
         <div>
           <button class="btn-secondary btn-nueva" onclick="nuevaSolicitud()">Nueva solicitud</button>
         </div>

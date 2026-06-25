@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Solicitud de Materiales</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg: #f0f4f8;
@@ -419,11 +420,11 @@
           </svg>
         </div>
         <h2>¡Solicitud registrada!</h2>
-        <p>El archivo CSV fue generado. Descárguelo y luego adjúntelo al correo.</p>
+        <p>El archivo Excel fue generado. Descárguelo y luego adjúntelo al correo.</p>
         <div>
-          <a class="btn-download" id="download-link" href="#" download="solicitud_materiales.csv">
+          <a class="btn-download" id="download-link" href="#" download="solicitud_materiales.xlsx">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Descargar CSV
+            Descargar Excel
           </a>
         </div>
         <div>
@@ -432,7 +433,7 @@
             Enviar por correo
           </a>
         </div>
-        <p class="email-hint">Se abrirá su cliente de correo con los datos completos. Adjunte el CSV que descargó antes de enviar.</p>
+        <p class="email-hint">Se abrirá su cliente de correo con los datos completos. Adjunte el Excel que descargó antes de enviar.</p>
         <div>
           <button class="btn-secondary btn-nueva" onclick="nuevaSolicitud()">Nueva solicitud</button>
         </div>
@@ -868,11 +869,23 @@ function confirmar() {
     rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.umb, m.cantidad, destino, datos.tipoConsumo, datos.tipo, datos.proceso, datos.actividad, datos.codigoObra, datos.cecoCompleto]);
   });
 
-  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
-  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const fname = `solicitud_${legajo}_${destino}_${ahora.slice(0,10)}.csv`;
+  // Nombre de archivo: solicitud_LEGAJO_DESTINO_AAAA-MM-DD_HH-MM-SS
+  const fechaParte = ahora.slice(0, 10);
+  const horaParte = ahora.slice(11, 19).replace(/:/g, '-');
+  const fname = `solicitud_${legajo}_${destino}_${fechaParte}_${horaParte}.xlsx`;
   ultimoNombreArchivo = fname;
+
+  // Generar archivo Excel (.xlsx) con SheetJS
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [
+    {wch: 19}, {wch: 10}, {wch: 26}, {wch: 38}, {wch: 16}, {wch: 8}, {wch: 9},
+    {wch: 10}, {wch: 14}, {wch: 16}, {wch: 14}, {wch: 30}, {wch: 14}, {wch: 14}
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Solicitud');
+  const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+  const blob = new Blob([wbout], {type: 'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
   const a = document.getElementById('download-link');
   a.href = url; a.download = fname;
 

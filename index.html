@@ -866,9 +866,9 @@ function confirmar() {
   const datos = getDatosImputacion();
   const ahora = new Date().toLocaleString('sv-SE').replace('T', ' ');
 
-  const rows = [['Fecha y Hora','Legajo','Nombre','Material','Código','Unidad de Medida','Cantidad','Ce.','Centro Operativo','Tipo de Consumo','Código de Obra','CeCo','Tipo','Proceso','Actividad']];
+  const rows = [['Fecha y Hora','Legajo','Nombre','Material','Código','Cantidad','UME','Ce.','Centro Operativo','Tipo de Consumo','Código de Obra','CeCo','Tipo','Proceso','Actividad']];
   selectedMaterials.forEach(m => {
-    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.umb, m.cantidad, 'CGP', destino, datos.tipoConsumo, datos.codigoObra, datos.cecoCompleto, datos.tipo, datos.proceso, datos.actividad]);
+    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.cantidad, m.umb, 'CGP', destino, datos.tipoConsumo, datos.codigoObra, datos.cecoCompleto, datos.tipo, datos.proceso, datos.actividad]);
   });
 
   // Nombre de archivo: solicitud_LEGAJO_DESTINO_AAAA-MM-DD_HH-MM-SS
@@ -880,7 +880,7 @@ function confirmar() {
   // Generar archivo Excel (.xlsx) con SheetJS
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws['!cols'] = [
-    {wch: 19}, {wch: 10}, {wch: 26}, {wch: 38}, {wch: 16}, {wch: 8}, {wch: 9},
+    {wch: 19}, {wch: 10}, {wch: 26}, {wch: 38}, {wch: 16}, {wch: 9}, {wch: 8},
     {wch: 6}, {wch: 10}, {wch: 14}, {wch: 14}, {wch: 14}, {wch: 16}, {wch: 14}, {wch: 30}
   ];
   const wb = XLSX.utils.book_new();

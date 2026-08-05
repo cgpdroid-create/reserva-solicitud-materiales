@@ -867,8 +867,10 @@ function confirmar() {
   const ahora = new Date().toLocaleString('sv-SE').replace('T', ' ');
 
   const rows = [['Fecha y Hora','Legajo','Nombre','Material','Código','Cantidad','UME','Ce.','Centro Operativo','Tipo de Consumo','Código de Obra','CeCo','Tipo','Proceso','Actividad']];
+  const CO_MAP = {'OLA': 'OV01', 'PEH': 'PH01', 'TAN': 'TD01'};
+  const destinoXlsx = CO_MAP[destino] || destino;
   selectedMaterials.forEach(m => {
-    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.cantidad, m.umb, 'CGP', destino, datos.tipoConsumo, datos.codigoObra, datos.cecoCompleto, datos.tipo, datos.proceso, datos.actividad]);
+    rows.push([ahora, legajo, legajoNombre, m.nombre, m.codigo, m.cantidad, m.umb, 'CGP', destinoXlsx, datos.tipoConsumo, datos.codigoObra, datos.cecoCompleto, datos.tipo, datos.proceso, datos.actividad]);
   });
 
   // Nombre de archivo: solicitud_LEGAJO_DESTINO_AAAA-MM-DD_HH-MM-SS
